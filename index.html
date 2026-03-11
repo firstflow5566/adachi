@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鄰家女孩・人物猜謎</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1008;
+    --paper: #f5f0e8;
+    --paper2: #ede7d9;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --green: #27623a;
+    --green-light: #2ecc71;
+    --gold: #b8860b;
+    --shadow: rgba(26,16,8,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,120,0.15) 28px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    min-height: 100vh;
+    font-family: 'Noto Serif JP', serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 40px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    padding: 32px 0 20px;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    display: block;
+    width: 80%;
+    margin: 14px auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--ink), transparent);
+  }
+
+  .title-jp {
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: clamp(26px, 7vw, 38px);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+  }
+
+  h1 span {
+    color: var(--red);
+  }
+
+  /* ── SETUP SCREEN ── */
+  #setup-screen {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 32px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .setup-card {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 32px 28px;
+    box-shadow: 6px 6px 0 var(--ink);
+    text-align: center;
+  }
+
+  .setup-card p {
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    color: #444;
+  }
+
+  .round-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    color: var(--gold);
+  }
+
+  .round-select {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+
+  .round-btn {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+
+  .round-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    transform: translateY(-2px);
+  }
+
+  .round-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 3px 3px 0 var(--gold);
+  }
+
+  .start-btn {
+    display: inline-block;
+    padding: 14px 40px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--gold);
+    transition: all 0.15s;
+  }
+
+  .start-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--gold);
+  }
+
+  .start-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--gold);
+  }
+
+  /* ── GAME SCREEN ── */
+  #game-screen {
+    width: 100%;
+    max-width: 460px;
+    display: none;
+  }
+
+  .progress-bar-wrap {
+    margin: 20px 0 8px;
+    height: 6px;
+    background: var(--paper2);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--red));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .status-row strong {
+    color: var(--ink);
+    font-size: 15px;
+  }
+
+  .question-card {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 24px;
+    box-shadow: 6px 6px 0 var(--ink);
+    text-align: center;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .question-card .q-label {
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+
+  .face-img-wrap {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    border: 3px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--paper2);
+    position: relative;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .face-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .overlay-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .overlay-icon.show { opacity: 1; }
+
+  .face-img-wrap.correct { border-color: var(--green); box-shadow: 4px 4px 0 var(--green); }
+  .face-img-wrap.wrong   { border-color: var(--red);   box-shadow: 4px 4px 0 var(--red); }
+
+  .select-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .answer-select {
+    width: 100%;
+    padding: 12px 40px 12px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    background: var(--paper);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    color: var(--ink);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .answer-select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,134,11,0.2);
+  }
+
+  .select-arrow {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 12px;
+    color: var(--ink);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--gold);
+    transition: all 0.15s;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    transform: translate(-1px,-1px);
+    box-shadow: 4px 4px 0 var(--gold);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Feedback banner */
+  .feedback {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: none;
+    animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  .feedback.correct {
+    display: block;
+    background: #e8f5e9;
+    border: 2px solid var(--green);
+    color: var(--green);
+  }
+
+  .feedback.wrong {
+    display: block;
+    background: #fdecea;
+    border: 2px solid var(--red);
+    color: var(--red);
+  }
+
+  .next-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: none;
+    transition: all 0.15s;
+  }
+
+  .next-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen {
+    width: 100%;
+    max-width: 460px;
+    display: none;
+    margin-top: 20px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .result-card {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 36px 28px;
+    box-shadow: 6px 6px 0 var(--ink);
+    text-align: center;
+  }
+
+  .result-emoji {
+    font-size: 52px;
+    margin-bottom: 12px;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+  }
+
+  .result-title {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    color: var(--ink);
+  }
+
+  .score-display {
+    font-size: clamp(52px, 14vw, 72px);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .score-display .slash {
+    font-size: 0.5em;
+    color: #aaa;
+    margin: 0 4px;
+  }
+
+  .score-display .correct-n { color: var(--green); }
+  .score-display .total-n   { color: var(--ink); }
+
+  .score-pct {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 28px;
+    letter-spacing: 0.05em;
+  }
+
+  .result-message {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    padding: 12px 16px;
+    border-radius: 3px;
+    background: var(--paper2);
+    border-left: 4px solid var(--gold);
+  }
+
+  .replay-btn {
+    display: inline-block;
+    padding: 13px 36px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--gold);
+    transition: all 0.15s;
+  }
+
+  .replay-btn:hover {
+    transform: translate(-2px,-2px);
+    box-shadow: 6px 6px 0 var(--gold);
+  }
+
+  /* Decorative divider */
+  .divider {
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+    margin: 20px auto;
+    opacity: 0.6;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+
+  .shake { animation: shake 0.4s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-jp">manga character quiz</div>
+  <h1>鄰家女孩<span>・</span>人物<span>猜謎</span></h1>
+</header>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <p>從 14 位角色中，根據頭像<br>選出正確的人物姓名吧！</p>
+    <div class="round-label">請選擇題目數量</div>
+    <div class="round-select" id="round-select"></div>
+    <button class="start-btn" onclick="startGame()">開始挑戰 ▶</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen">
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar"></div>
+  </div>
+  <div class="status-row">
+    <span>第 <strong id="q-num">1</strong> 題 / <strong id="q-total">5</strong> 題</span>
+    <span>得分 <strong id="score-now">0</strong></span>
+  </div>
+  <div class="question-card" id="question-card">
+    <div class="q-label">▸ 這位是哪位角色？</div>
+    <div class="face-img-wrap" id="face-wrap">
+      <img id="face-img" src="" alt="character face">
+      <div class="overlay-icon" id="overlay-icon"></div>
+    </div>
+    <div class="select-wrap">
+      <select class="answer-select" id="answer-select">
+        <option value="">── 請選擇 ──</option>
+      </select>
+      <span class="select-arrow">▼</span>
+    </div>
+    <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">確定答案</button>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">下一題 →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen">
+  <div class="result-card">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title">測驗結束！</div>
+    <div class="divider"></div>
+    <div class="score-display">
+      <span class="correct-n" id="final-correct">0</span>
+      <span class="slash">/</span>
+      <span class="total-n" id="final-total">5</span>
+    </div>
+    <div class="score-pct" id="score-pct"></div>
+    <div class="result-message" id="result-message"></div>
+    <button class="replay-btn" onclick="resetGame()">再玩一次 ↺</button>
+  </div>
+</div>
+
+<script>
+const CHARACTERS = [
+  "秋葉習","上杉和也","上杉達也","門松直人","樹多村光",
+  "北島光太","国見比呂","里山活樹","七味","関和明",
+  "高杉勇作","新見克也","大和圭介","若松真人"
+];
+
+// File index → name mapping (1-based)
+const FILE_NAMES = [
+  "01_秋葉習","02_上杉和也","03_上杉達也","04_門松直人","05_樹多村光",
+  "06_北島光太","07_国見比呂","08_里山活樹","09_七味","10_関和明",
+  "11_高杉勇作","12_新見克也","13_大和圭介","14_若松真人"
+];
+
+// name → filename
+const nameToFile = {};
+FILE_NAMES.forEach(f => {
+  const name = f.replace(/^\d+_/, '');
+  nameToFile[name] = f + '.png';
+});
+
+let totalRounds = 5;
+let currentQ = 0;
+let score = 0;
+let questionOrder = [];
+let answered = false;
+
+// Build round selector
+const roundSelect = document.getElementById('round-select');
+for (let i = 3; i <= 14; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'round-btn' + (i === 5 ? ' active' : '');
+  btn.textContent = i;
+  btn.dataset.val = i;
+  btn.onclick = () => {
+    document.querySelectorAll('.round-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    totalRounds = i;
+  };
+  roundSelect.appendChild(btn);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  currentQ = 0;
+  score = 0;
+  questionOrder = shuffle(CHARACTERS).slice(0, totalRounds);
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  document.getElementById('q-total').textContent = totalRounds;
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false;
+  const name = questionOrder[currentQ];
+  const imgFile = nameToFile[name];
+
+  // Update status
+  document.getElementById('q-num').textContent = currentQ + 1;
+  document.getElementById('score-now').textContent = score;
+
+  // Progress bar
+  const pct = (currentQ / totalRounds) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  // Image
+  const img = document.getElementById('face-img');
+  img.src = imgFile;
+  const wrap = document.getElementById('face-wrap');
+  wrap.className = 'face-img-wrap';
+  document.getElementById('overlay-icon').className = 'overlay-icon';
+  document.getElementById('overlay-icon').textContent = '';
+
+  // Build 5 options: 1 correct + 4 random wrong
+  const wrong = shuffle(CHARACTERS.filter(c => c !== name)).slice(0, 4);
+  const options = shuffle([name, ...wrong]);
+
+  const sel = document.getElementById('answer-select');
+  sel.innerHTML = '<option value="">── 請選擇 ──</option>';
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o;
+    opt.textContent = o;
+    sel.appendChild(opt);
+  });
+
+  // Reset UI
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').style.display = 'none';
+
+  // Re-animate card
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'fadeUp 0.4s ease both';
+}
+
+function submitAnswer() {
+  if (answered) return;
+  const sel = document.getElementById('answer-select');
+  const chosen = sel.value;
+  if (!chosen) {
+    sel.style.borderColor = 'var(--red)';
+    setTimeout(() => sel.style.borderColor = '', 800);
+    return;
+  }
+
+  answered = true;
+  const correct = questionOrder[currentQ];
+  const isCorrect = chosen === correct;
+
+  const wrap = document.getElementById('face-wrap');
+  const icon = document.getElementById('overlay-icon');
+  const fb = document.getElementById('feedback');
+
+  if (isCorrect) {
+    score++;
+    wrap.classList.add('correct');
+    icon.textContent = '✓';
+    icon.className = 'overlay-icon show';
+    fb.className = 'feedback correct';
+    fb.textContent = '✓ 答對了！太厲害了！';
+  } else {
+    wrap.classList.add('wrong');
+    icon.textContent = '✗';
+    icon.className = 'overlay-icon show';
+    fb.className = 'feedback wrong';
+    fb.innerHTML = `✗ 答錯了。正確答案是「<strong>${correct}</strong>」。`;
+    wrap.classList.add('shake');
+    setTimeout(() => wrap.classList.remove('shake'), 400);
+  }
+
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('score-now').textContent = score;
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.style.display = 'block';
+  const isLast = currentQ === totalRounds - 1;
+  nextBtn.textContent = isLast ? '查看成績 ▶' : '下一題 →';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= totalRounds) {
+    showResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('game-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round((score / totalRounds) * 100);
+  document.getElementById('final-correct').textContent = score;
+  document.getElementById('final-total').textContent = totalRounds;
+  document.getElementById('score-pct').textContent = `答對率 ${pct}%`;
+
+  let emoji, msg;
+  if (pct === 100)     { emoji = '🏆'; msg = '完美！全部答對！你真的太熟悉這部作品了！'; }
+  else if (pct >= 80)  { emoji = '🌟'; msg = '非常厲害！對角色的了解相當深入！'; }
+  else if (pct >= 60)  { emoji = '👍'; msg = '不錯喔！再多複習幾次就能全對了！'; }
+  else if (pct >= 40)  { emoji = '📖'; msg = '還有進步空間，多看幾遍漫畫吧！'; }
+  else                 { emoji = '💪'; msg = '繼續加油！再挑戰一次，一定會更好！'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-message').textContent = msg;
+
+  // Progress to 100%
+  document.getElementById('progress-bar').style.width = '100%';
+}
+
+function resetGame() {
+  score = 0;
+  currentQ = 0;
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'block';
+  document.getElementById('progress-bar').style.width = '0%';
+}
+</script>
+</body>
+</html>
